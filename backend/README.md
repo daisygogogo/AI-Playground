@@ -11,51 +11,6 @@ A robust NestJS backend API for the AI Model Playground, providing authenticatio
 - **Authentication**: JWT-based secure authentication system
 - **Rate Limiting**: Built-in request rate limiting for API protection
 
-### AI Integration
-- **OpenAI Integration**: Direct integration with OpenAI GPT models
-- **Provider Pattern**: Extensible architecture for adding new AI providers
-- **Streaming Responses**: Real-time chunk-by-chunk response streaming
-- **Token Estimation**: Accurate token counting and cost calculation
-- **Performance Metrics**: Response time tracking and performance analytics
-
-### Data Management
-- **PostgreSQL Database**: Robust data persistence with ACID compliance
-- **Prisma ORM**: Type-safe database operations with migrations
-- **Session Management**: Complete conversation history storage
-- **User Management**: Secure user registration and profile management
-- **Cost Tracking**: Detailed usage and cost analytics per user
-
-## 🛠️ Tech Stack
-
-### Core Framework
-- **NestJS**: Progressive Node.js framework for scalable applications
-- **TypeScript**: Full type safety and modern JavaScript features
-- **Node.js**: Runtime environment with latest LTS version
-
-### Database & ORM
-- **PostgreSQL**: Advanced open-source relational database
-- **Prisma**: Next-generation ORM with type safety
-- **Database Migrations**: Version-controlled schema changes
-
-### Authentication & Security
-- **JWT**: JSON Web Tokens for stateless authentication
-- **bcrypt**: Secure password hashing
-- **Passport**: Authentication middleware
-- **CORS**: Cross-origin resource sharing configuration
-
-### AI & External APIs
-- **OpenAI API**: GPT model integration
-- **Axios**: HTTP client for external API calls
-- **Rate Limiting**: Express rate limit middleware
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Node.js 18+ 
-- PostgreSQL 14+
-- npm or yarn
-- OpenAI API Key
-
 ### Installation
 
 1. **Install Dependencies**
@@ -85,9 +40,7 @@ A robust NestJS backend API for the AI Model Playground, providing authenticatio
    # Server
    PORT=4000
    NODE_ENV="development"
-   
-   # CORS
-   CORS_ORIGIN="http://localhost:3000"
+  
    ```
 
 3. **Database Setup**
@@ -137,14 +90,6 @@ npx prisma migrate prod # Run migrations in production
 npx prisma db push     # Push schema changes
 npx prisma db seed     # Seed database
 npx prisma studio      # Open Prisma Studio
-```
-
-### Testing
-```bash
-npm run test           # Run unit tests
-npm run test:e2e       # Run end-to-end tests
-npm run test:cov       # Run tests with coverage
-npm run test:watch     # Run tests in watch mode
 ```
 
 ## 📊 Database Schema
@@ -206,7 +151,6 @@ model AIConversation {
 POST /auth/register     # User registration
 POST /auth/login        # User login
 GET  /auth/profile      # Get user profile
-POST /auth/refresh      # Refresh JWT token
 ```
 
 ### Playground
@@ -222,37 +166,6 @@ DELETE /playground/sessions/:id     # Delete session
 ### Server-Sent Events (SSE)
 The playground uses SSE for real-time AI model responses:
 
-```typescript
-// SSE endpoint
-GET /playground/stream?prompt=Hello&models=gpt-3.5-turbo,gpt-4o-mini&token=jwt-token
-
-// Event types returned:
-{
-  "type": "session",
-  "sessionId": "session-uuid"
-}
-
-{
-  "type": "status", 
-  "model": "gpt-3.5-turbo",
-  "status": "streaming"
-}
-
-{
-  "type": "chunk",
-  "model": "gpt-3.5-turbo", 
-  "content": "Hello! How can I help you today?",
-  "timestamp": 1640995200000
-}
-
-{
-  "type": "metrics",
-  "model": "gpt-3.5-turbo",
-  "tokensUsed": 25,
-  "cost": 0.00005,
-  "responseTime": 1500
-}
-```
 
 ### Rate Limiting
 - **50 requests per hour per user**
@@ -260,100 +173,6 @@ GET /playground/stream?prompt=Hello&models=gpt-3.5-turbo,gpt-4o-mini&token=jwt-t
 - **Automatic reset timer**
 - **User-friendly error messages**
 
-## 🔒 Security Features
-
-### Authentication
-- **JWT Tokens**: Stateless authentication with configurable expiration
-- **Password Hashing**: bcrypt with salt rounds for secure storage
-- **Protected Routes**: Guard-based route protection
-- **Token Refresh**: Automatic token renewal system
-
-### Data Protection
-- **Input Validation**: Comprehensive validation using class-validator
-- **SQL Injection Prevention**: Prisma ORM prevents SQL injection
-- **CORS Configuration**: Configurable cross-origin resource sharing
-- **Rate Limiting**: Prevents abuse and DDoS attacks
-
-## 🧩 Module Documentation
-
-### Authentication Module (`auth/`)
-Handles user authentication and authorization:
-
-```typescript
-@Module({
-  imports: [
-    UsersModule,
-    PassportModule,
-    JwtModule.register({
-      secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: process.env.JWT_EXPIRES_IN },
-    }),
-  ],
-  controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
-  exports: [AuthService],
-})
-export class AuthModule {}
-```
-
-### Playground Module (`playground/`)
-Core AI playground functionality:
-
-```typescript
-@Module({
-  imports: [PrismaModule],
-  controllers: [PlaygroundController],
-  providers: [
-    PlaygroundService,
-    OpenAIProvider,
-    PlaygroundAuthGuard,
-    RateLimitGuard,
-  ],
-})
-export class PlaygroundModule {}
-```
-
-### OpenAI Provider (`providers/openai.provider.ts`)
-AI model integration with provider pattern:
-
-```typescript
-export class OpenAIProvider {
-  private openai: OpenAI;
-  
-  constructor(private modelName: string) {
-    this.openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
-  }
-  
-  async *streamCompletion(prompt: string): AsyncGenerator<string> {
-    const stream = await this.openai.chat.completions.create({
-      model: this.modelName,
-      messages: [{ role: 'user', content: prompt }],
-      stream: true,
-    });
-    
-    for await (const chunk of stream) {
-      const content = chunk.choices[0]?.delta?.content || '';
-      if (content) yield content;
-    }
-  }
-}
-```
-
-## 🧪 Testing
-
-### Unit Tests
-```bash
-npm run test              # Run all unit tests
-npm run test:watch        # Run tests in watch mode
-npm run test:cov          # Run tests with coverage
-```
-
-### Integration Tests
-```bash
-npm run test:e2e          # Run end-to-end tests
-```
 
 ## 🚀 Deployment
 
@@ -363,75 +182,12 @@ npm run build
 npm run start:prod
 ```
 
-### Docker Deployment
-```bash
-# Build image
-docker build -t ai-playground-backend .
-
-# Run container
-docker run -p 4000:4000 ai-playground-backend
-```
-
-### Environment Setup
-```env
-NODE_ENV=production
-DATABASE_URL="your-production-db-url"
-JWT_SECRET="your-production-jwt-secret"
-OPENAI_API_KEY="your-openai-api-key"
-```
-
 ### Database Migration
 ```bash
 npx prisma migrate deploy
 ```
 
-## 🐛 Troubleshooting
 
-### Common Issues
-
-1. **Database Connection Failed**
-   ```bash
-   # Check PostgreSQL is running
-   sudo service postgresql status
-   
-   # Verify connection string
-   npx prisma db pull
-   ```
-
-2. **OpenAI API Errors**
-   ```bash
-   # Verify API key
-   curl -H "Authorization: Bearer $OPENAI_API_KEY" \
-        https://api.openai.com/v1/models
-   ```
-
-3. **JWT Token Issues**
-   ```bash
-   # Check JWT secret configuration
-   node -e "console.log(require('jsonwebtoken').verify('token', 'secret'))"
-   ```
-
-4. **Rate Limiting Too Strict**
-   - Adjust `RATE_LIMIT_MAX_REQUESTS` in environment
-   - Check user session counting logic
-   - Verify rate limit window configuration
-
-## 🤝 Contributing
-
-### Development Setup
-1. Fork the repository
-2. Create feature branch: `git checkout -b feature/new-feature`
-3. Install dependencies: `npm install`
-4. Setup environment: `cp .env.example .env`
-5. Run migrations: `npx prisma migrate dev`
-6. Start development: `npm run start:dev`
-
-### Code Guidelines
-- Follow NestJS best practices
-- Use TypeScript for type safety
-- Write comprehensive tests
-- Document API endpoints
-- Follow conventional commits
 
 ## 📄 License
 
