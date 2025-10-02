@@ -11,7 +11,7 @@
     "setup": "npm run docker:db && npm run prisma:generate && npm run prisma:migrate:dev && npm run prisma:seed && npm start",
     "setup:prod": "npm run prisma:generate && npm run prisma:migrate:deploy && npm run prisma:seed",
     "start": "nest start --watch",
-    "start:prod": "npm run prisma:migrate:deploy && node dist/main",
+    "start:prod": "node dist/main",
     "docker:db": "docker-compose -f docker-compose.db.yml up -d",
     "prisma:seed": "prisma db seed",
     "prisma:migrate:dev": "prisma migrate dev --preview-feature",
