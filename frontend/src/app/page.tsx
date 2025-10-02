@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useAuthStore } from "@/stores/auth";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 
 export default function HomePage() {
   const { isAuthenticated } = useAuthStore();

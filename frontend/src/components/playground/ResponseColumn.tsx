@@ -6,7 +6,6 @@ import { ModelStatus, ModelMetrics } from '@/types/playground';
 import { cn, formatCost, formatResponseTime } from '@/lib/utils';
 
 interface ResponseColumnProps {
-  modelName: string;
   response: string;
   status: ModelStatus;
   metrics?: ModelMetrics;
@@ -14,7 +13,6 @@ interface ResponseColumnProps {
 }
 
 export default function ResponseColumn({ 
-  modelName, 
   response, 
   status, 
   metrics,
@@ -40,8 +38,8 @@ export default function ResponseColumn({
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               components={{
-                code({ node, inline, className, children, ...props }) {
-                  return inline ? (
+                code(props) { const { children } = props as any;
+                  return (props as any).inline ? (
                     <code 
                       className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono" 
                       {...props}

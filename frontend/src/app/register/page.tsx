@@ -32,7 +32,6 @@ export default function RegisterPage() {
         lastName,
         email,
         password,
-        terms: true,
       });
       console.log('Register successful:', { user: response.user, token: response.token });
       setUser(response.user);

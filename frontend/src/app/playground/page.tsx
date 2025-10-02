@@ -1,14 +1,14 @@
 'use client';
 
-import { useEffect, useMemo, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+// import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/theme-toggle';
 import PromptInput from '@/components/playground/PromptInput';
 // import ModelSelector from '@/components/playground/ModelSelector';
 import StatusIndicator from '@/components/playground/StatusIndicator';
-import ResponseColumn from '@/components/playground/ResponseColumn';
+// import ResponseColumn from '@/components/playground/ResponseColumn';
 import MarkdownRenderer from '@/components/playground/MarkdownRenderer';
 import { usePlaygroundStore } from '@/stores/playgroundStore';
 import { useAuthStore } from '@/stores/auth';
@@ -23,7 +23,6 @@ export default function PlaygroundPage() {
     statuses,
     metrics,
     setPrompt,
-    setSelectedModels,
   } = usePlaygroundStore();
 
   const { user, isAuthenticated, logout } = useAuthStore();
