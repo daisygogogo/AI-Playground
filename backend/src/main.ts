@@ -52,7 +52,7 @@ async function bootstrap() {
 
   app.use(cookieParser());
   app.enableCors({
-    origin: ['https://contact-management-app-158.vercel.app', 'http://localhost:4001', 'http://localhost:3001','http://localhost:3000'],
+    origin: ['https://ai-playground-blond.vercel.app', 'http://localhost:4001', 'http://localhost:3001','http://localhost:3000'],
     credentials: true,
   });
 
