@@ -1,0 +1,16 @@
+.idea
+node_modules/
+dist/
+prisma/*.db
+coverage/
+
+.DS_Store
+
+prisma/dbml
+.env
+service-account.json
+
+npm-debug.log
+
+# File upload storage
+storage/

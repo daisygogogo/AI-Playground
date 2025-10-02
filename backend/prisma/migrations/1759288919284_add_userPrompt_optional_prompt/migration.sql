@@ -1,0 +1,1 @@
+ALTER TABLE "AIConversation" ADD COLUMN IF NOT EXISTS "userPrompt" TEXT;
