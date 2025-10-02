@@ -1,7 +1,7 @@
 {
-  "name": "Contact-Management-App-Backend",
+  "name": "AI-playground-App-Backend",
   "version": "0.0.1",
-  "description": "Contact Management App Backend",
+  "description": "AI playground App Backend",
   "license": "MIT",
   "engines": {
     "node": ">=18.0.0"
