@@ -27,12 +27,9 @@ export class OpenAIProvider implements AIProvider {
     try {
       // If no API key, use mock responses
       if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY === 'demo-key-for-testing') {
-        console.log(`Using mock response for ${this.model}`);
         yield* this.getMockStreamResponse(prompt);
         return;
       }
-
-      console.log(`Calling OpenAI API for ${this.model}`);
       
       const stream = await this.openai.chat.completions.create({
         model: this.model,

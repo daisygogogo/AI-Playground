@@ -79,9 +79,7 @@ export class PlaygroundController {
     observer: any,
     sessionId?: string,
   ) {
-    console.log(`Processing prompt for models: ${models.join(', ')}`);
-    
-    // 创建或复用AI会话记录
+
     let session: any;
     try {
       if (sessionId) {
@@ -110,10 +108,10 @@ export class PlaygroundController {
       console.error('Failed to create/update AI session:', error);
     }
     
-    // 并发处理所有模型
+    // Process all models concurrently
     const promises = models.map(async (modelName) => {
       try {
-        // 发送开始状态
+        // Send initial status
         observer.next({
           data: JSON.stringify({
             type: 'status',
@@ -122,12 +120,12 @@ export class PlaygroundController {
           })
         } as MessageEvent);
 
-        // 创建AI提供商实例
+        // Create AI provider instance
         const provider = new OpenAIProvider(modelName);
         const startTime = Date.now();
         let fullResponse = '';
         
-        // 实时流式传输
+        // Real-time streaming
         for await (const chunk of provider.streamCompletion(prompt)) {
           fullResponse += chunk;
           
@@ -146,7 +144,7 @@ export class PlaygroundController {
         const outputTokens = provider.estimateTokens(fullResponse);
         const cost = provider.calculateCost(inputTokens, outputTokens);
 
-        // 保存对话记录
+        // Save conversation record
         if (session) {
           try {
             await this.prisma.aIConversation.create({
@@ -163,7 +161,7 @@ export class PlaygroundController {
               },
             });
 
-            // 更新会话总计
+            // Update session totals
             await this.prisma.aISession.update({
               where: { id: session.id },
               data: {
@@ -176,7 +174,7 @@ export class PlaygroundController {
           }
         }
         
-        // 发送指标
+        // Send metrics
         observer.next({
           data: JSON.stringify({
             type: 'metrics',
@@ -187,7 +185,7 @@ export class PlaygroundController {
           })
         } as MessageEvent);
         
-        // 发送完成状态
+        // Send completion status
         observer.next({
           data: JSON.stringify({
             type: 'status',
@@ -208,10 +206,10 @@ export class PlaygroundController {
       }
     });
     
-    // 等待所有模型完成
+    // Wait for all models to complete
     await Promise.allSettled(promises);
     
-    // 标记会话完成
+    // Mark session as completed
     if (session) {
       try {
         await this.prisma.aISession.update({

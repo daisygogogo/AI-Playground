@@ -22,7 +22,7 @@ COPY --from=builder /app/prisma ./prisma
 
 EXPOSE 3000
 
-# 创建启动脚本
+# Create startup script
 RUN echo '#!/bin/sh\n\
 npm run prisma:generate\n\
 npm run prisma:migrate:deploy\n\

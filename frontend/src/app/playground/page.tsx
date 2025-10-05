@@ -93,12 +93,10 @@ export default function PlaygroundPage() {
 
   // Check authentication status
   useEffect(() => {
-    console.log('Playground Auth Check:', { user, token: !!useAuthStore.getState().token, isAuth: isAuthenticated() });
     if (!isAuthenticated()) {
-      console.log('Not authenticated, redirecting to login');
       router.push('/login');
     }
-  }, [isAuthenticated, router]); // Remove user dependency to prevent infinite loop
+  }, [isAuthenticated, router]);
 
   useEffect(() => {
     // Only load sessions if we don't have any yet
@@ -109,20 +107,16 @@ export default function PlaygroundPage() {
 
   // Load session detail only when switching to an existing session
   useEffect(() => {
-    console.log('LoadDetail useEffect triggered, currentSessionId:', currentSessionId);
     const loadDetail = async () => {
       if (!currentSessionId) { 
-        console.log('No currentSessionId, clearing turns');
         setTurns([]);
         setLastCompletedTurn(null);
         return; 
       }
       // Only skip if currently streaming or have a completed turn for current session
       if (isStreaming) {
-        console.log('Skipping loadDetail - currently streaming');
         return;
       }
-      console.log('Loading session detail for:', currentSessionId);
       const session = await fetchSessionDetail(currentSessionId);
       const grouped: Record<string, any> = {};
       (session?.conversations || []).forEach((c: any) => {
@@ -148,7 +142,6 @@ export default function PlaygroundPage() {
         }
       });
       const arr = Object.values(grouped).sort((a: any,b: any)=> new Date(a.time).getTime()-new Date(b.time).getTime());
-      console.log('Setting turns with metrics and deduplication:', arr);
       setTurns(arr as any[]);
     };
     loadDetail();
@@ -160,7 +153,6 @@ export default function PlaygroundPage() {
       // Check if any model has error status - don't create completed turn if there are errors
       const hasErrors = selectedModels.some(model => statuses[model] === 'error');
       if (!hasErrors) {
-        console.log('Creating completed turn from streaming data');
         const completedTurn = {
           time: new Date().toISOString(),
           prompt: prompt,
@@ -171,8 +163,6 @@ export default function PlaygroundPage() {
         
         // Refresh sessions list to include the current session
         setTimeout(() => loadSessions(1), 1000);
-      } else {
-        console.log('Skipping completed turn creation due to errors');
       }
     }
   }, [isStreaming, statuses, selectedModels]);
@@ -180,19 +170,15 @@ export default function PlaygroundPage() {
   // Move completed turn to history when new streaming starts
   useEffect(() => {
     if (isStreaming && lastCompletedTurn) {
-      console.log('Moving completed turn to history, starting new stream');
       setTurns(prev => [...prev, lastCompletedTurn]);
       setLastCompletedTurn(null);
     }
   }, [isStreaming]);
 
   const handlePromptSubmit = (newPrompt: string) => {
-    console.log('handlePromptSubmit called with:', newPrompt);
     setPrompt(newPrompt);
-    console.log('About to call streamPrompt');
     streamPrompt(newPrompt);
     setHasAsked(true);
-    console.log('handlePromptSubmit completed');
   };
 
   const handleLogout = () => {
@@ -242,7 +228,6 @@ export default function PlaygroundPage() {
                 key={s.id} 
                 className={`w-full text-left px-2 py-2 rounded hover:bg-muted ${currentSessionId===s.id?'bg-muted':''}`} 
                 onClick={() => {
-                  console.log('Clicking session:', s.id);
                   // Clear current state before loading new session
                   setLastCompletedTurn(null);
                   setHasAsked(false);

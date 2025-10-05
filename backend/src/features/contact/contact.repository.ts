@@ -10,8 +10,6 @@ export class ContactRepository {
     const { page = 1, pageSize = 10, filtersKeyWord, sortBy } = query;
     const skip = (page - 1) * pageSize;
     
-    console.log('Query parameters:', { page, pageSize, filtersKeyWord, sortBy, userRole });
-
     // Build where clause for filtering
     const where: any = {};
     
@@ -37,8 +35,6 @@ export class ContactRepository {
       ];
     }
     
-    console.log('Built where clause:', JSON.stringify(where, null, 2));
-
     // Build orderBy clause for sorting
     let orderBy: any = {};
     if (sortBy?.field && sortBy?.direction) {

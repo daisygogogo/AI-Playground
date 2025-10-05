@@ -33,7 +33,6 @@ async function bootstrap() {
     }),
   );
 
-  // to load local file
   app.use('/storage', express.static('storage'));
 
   const { httpAdapter } = app.get(HttpAdapterHost);
@@ -56,24 +55,9 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // 移除API版本化
-  // const API_VERSION = 'v1';
-  // app.setGlobalPrefix(API_VERSION);
-  // app.enableVersioning({
-  //   type: VersioningType.URI,
-  // });
 
   app.enableShutdownHooks();
 
-  // const ONE_MINUTE = 60 * 1000;
-  // const CONNECTIONS_LIMIT = 500;
-  // app.use(
-  //   rateLimit({
-  //     windowMs: ONE_MINUTE,
-  //     limit: CONNECTIONS_LIMIT,
-  //     skip: (request) => request.path.includes('analytics'),
-  //   }),
-  // );
 
   app.use(compression());
 
@@ -92,7 +76,6 @@ async function bootstrap() {
   await app.listen(port, '0.0.0.0');
   logger.log(`Application is listening on port ${port} on all network interfaces`);
 
-  // 优雅关闭处理
   process.on('SIGTERM', async () => {
     logger.log('SIGTERM received, shutting down gracefully');
     await app.close();

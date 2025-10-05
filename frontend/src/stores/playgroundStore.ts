@@ -66,10 +66,8 @@ export const usePlaygroundStore = create<PlaygroundStore & HistoryState>((set, g
   setSessions: (sessions: SessionItem[]) => set({ sessions }),
 
   updateResponse: (model: string, content: string, append = true) => {
-    console.log(`Store updateResponse called for ${model} with content:`, content.substring(0, 100));
     set(state => {
       const newResponse = append ? (state.responses[model] || '') + content : content;
-      console.log(`Store setting response for ${model}:`, newResponse.substring(0, 100));
       return {
         responses: {
           ...state.responses,
@@ -80,7 +78,6 @@ export const usePlaygroundStore = create<PlaygroundStore & HistoryState>((set, g
   },
 
   setStatus: (model: string, status: ModelStatus) => {
-    console.log(`Store setStatus called for ${model} with status:`, status);
     set(state => ({
       statuses: {
         ...state.statuses,
