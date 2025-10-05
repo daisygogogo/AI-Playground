@@ -27,7 +27,7 @@ export default function PlaygroundPage() {
 
   const { user, isAuthenticated, logout } = useAuthStore();
   const router = useRouter();
-  const { streamPrompt, isStreaming } = useSSEStream();
+  const { streamPrompt, isStreaming, closeStream } = useSSEStream();
   
   // Listen for new session creation to refresh sidebar
   useEffect(() => {
@@ -39,6 +39,13 @@ export default function PlaygroundPage() {
     window.addEventListener('sessionCreated', handleSessionCreated);
     return () => window.removeEventListener('sessionCreated', handleSessionCreated);
   }, []);
+
+  // Cleanup SSE connection on component unmount
+  useEffect(() => {
+    return () => {
+      closeStream();
+    };
+  }, [closeStream]);
   const [hasAsked, setHasAsked] = useState(false);
   const [sessions, setSessions] = useState<any[]>([]);
   const [page, setPage] = useState(1);

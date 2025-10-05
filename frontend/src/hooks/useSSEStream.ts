@@ -54,17 +54,99 @@ export function useSSEStream() {
         params.set('sessionId', currentSessionId);
       }
 
-      // Add authentication token to query parameters
-      if (token) {
-        params.set('token', token);
-      }
-
       const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
       const url = `${base}/playground/stream?${params.toString()}`;
 
       console.log(`${connectionId}: Creating SSE connection to:`, url);
-      // Create SSE connection
-      eventSourceRef.current = new EventSource(url);
+      // Create SSE connection - EventSource doesn't support custom headers
+      // So we use fetch with stream handling
+      const controller = new AbortController();
+      
+      try {
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'text/event-stream',
+            'Cache-Control': 'no-cache',
+          },
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const reader = response.body?.getReader();
+        if (!reader) {
+          throw new Error('Response body is not readable');
+        }
+
+        // Process the stream
+        const processStream = async () => {
+          const decoder = new TextDecoder();
+          let buffer = '';
+
+          try {
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+
+              buffer += decoder.decode(value, { stream: true });
+              const lines = buffer.split('\n');
+              
+              // Keep the last incomplete line in the buffer
+              buffer = lines.pop() || '';
+
+              for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                  const data = line.slice(6);
+                  if (data.trim() && data !== '[DONE]') {
+                    try {
+                      const event = { data } as MessageEvent;
+                      // Simulate EventSource onmessage
+                      if (eventSourceRef.current?.onmessage) {
+                        eventSourceRef.current.onmessage(event);
+                      }
+                    } catch (error) {
+                      console.error('Error processing SSE data:', error);
+                    }
+                  }
+                }
+              }
+            }
+          } catch (error) {
+            if (eventSourceRef.current?.onerror) {
+              eventSourceRef.current.onerror(new Event('error'));
+            }
+          }
+        };
+
+        // Create a mock EventSource-like object
+        eventSourceRef.current = {
+          readyState: 1, // EventSource.OPEN
+          close: () => {
+            controller.abort();
+          },
+          onmessage: null,
+          onerror: null,
+          onopen: null,
+        } as EventSource;
+
+        // Trigger onopen
+        if (eventSourceRef.current.onopen) {
+          eventSourceRef.current.onopen(new Event('open'));
+        }
+
+        // Start processing
+        processStream();
+
+      } catch (error) {
+        console.error('Failed to create stream connection:', error);
+        if (eventSourceRef.current?.onerror) {
+          eventSourceRef.current.onerror(new Event('error'));
+        }
+      }
       
       // Add a timeout to detect rate limit errors quickly
       const errorTimeout = setTimeout(() => {
@@ -196,17 +278,26 @@ export function useSSEStream() {
 
         if (allComplete) {
           setIsStreaming(false);
-          return;
+          return true;
         }
+        return false;
       };
 
-      // Periodically check if all models are completed
+      // Periodically check if all models are completed with proper cleanup
       const checkInterval = setInterval(() => {
-        checkAllComplete();
-        if (!usePlaygroundStore.getState().isStreaming) {
+        const isComplete = checkAllComplete();
+        const currentlyStreaming = usePlaygroundStore.getState().isStreaming;
+        
+        if (isComplete || !currentlyStreaming) {
           clearInterval(checkInterval);
         }
       }, 1000);
+
+      // Store interval reference for cleanup
+      const currentEventSource = eventSourceRef.current;
+      if (currentEventSource) {
+        (currentEventSource as any)._checkInterval = checkInterval;
+      }
 
     } catch (error) {
       console.error('Failed to start SSE stream:', error);
@@ -223,6 +314,12 @@ export function useSSEStream() {
   // Cleanup function
   const closeStream = useCallback(() => {
     if (eventSourceRef.current) {
+      // Clear any stored interval
+      const interval = (eventSourceRef.current as any)._checkInterval;
+      if (interval) {
+        clearInterval(interval);
+      }
+      
       eventSourceRef.current.close();
       eventSourceRef.current = null;
     }

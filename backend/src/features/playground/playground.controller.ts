@@ -2,7 +2,7 @@ import { Controller, Get, Query, Sse, UseGuards, Request, Param } from '@nestjs/
 import { Observable } from 'rxjs';
 import { PlaygroundService } from './playground.service';
 import { OpenAIProvider } from './providers/openai.provider';
-import { PlaygroundAuthGuard } from './playground-auth.guard';
+import { AuthenticationGuard } from '../authentication/authentication.guard';
 import { RateLimitGuard } from './rate-limit.guard';
 import { AuthenticatedRequest } from '../../common/types/auth.types';
 import { PrismaService } from 'nestjs-prisma';
@@ -15,24 +15,38 @@ export class PlaygroundController {
   ) {}
   
   @Get('sessions')
-  @UseGuards(PlaygroundAuthGuard)
+  @UseGuards(AuthenticationGuard)
   async listSessions(@Request() req: AuthenticatedRequest, @Query('page') page = '1', @Query('pageSize') pageSize = '20') {
     const p = Math.max(parseInt(page) || 1, 1);
     const ps = Math.min(Math.max(parseInt(pageSize) || 20, 1), 100);
     const offset = (p - 1) * ps;
-    const [items, totalRow]: any = await Promise.all([
-      this.prisma.$queryRawUnsafe(
-        'SELECT id, "prompt", "createdAt", "updatedAt", "totalCost", "totalTokens", "status" FROM "AISession" WHERE "userId" = $1 ORDER BY "createdAt" DESC LIMIT $2 OFFSET $3',
-        req.userId, ps, offset,
-      ),
-      this.prisma.$queryRawUnsafe('SELECT COUNT(*)::int AS count FROM "AISession" WHERE "userId" = $1', req.userId),
+    
+    const [items, total] = await Promise.all([
+      this.prisma.aISession.findMany({
+        where: { userId: req.userId },
+        select: {
+          id: true,
+          prompt: true,
+          createdAt: true,
+          updatedAt: true,
+          totalCost: true,
+          totalTokens: true,
+          status: true,
+        },
+        orderBy: { createdAt: 'desc' },
+        take: ps,
+        skip: offset,
+      }),
+      this.prisma.aISession.count({
+        where: { userId: req.userId },
+      }),
     ]);
-    const total = Array.isArray(totalRow) ? (totalRow[0]?.count ?? 0) : (totalRow?.count ?? 0);
+    
     return { items, total, page: p, pageSize: ps };
   }
 
   @Get('sessions/:id')
-  @UseGuards(PlaygroundAuthGuard)
+  @UseGuards(AuthenticationGuard)
   async getSession(@Param('id') id: string, @Request() req: AuthenticatedRequest) {
     const session = await this.prisma.aISession.findFirst({
       where: { id, userId: req.userId },
@@ -43,7 +57,7 @@ export class PlaygroundController {
 
   @Get('stream')
   @Sse()
-  @UseGuards(PlaygroundAuthGuard, RateLimitGuard)
+  @UseGuards(AuthenticationGuard, RateLimitGuard)
   async streamCompletion(
     @Query('prompt') prompt: string,
     @Query('models') models: string,
