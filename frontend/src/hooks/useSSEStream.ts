@@ -132,9 +132,13 @@ export function useSSEStream() {
           api.head('/playground/stream')
             .then(response => {
               if (response.status === 429) {
+                // Try to get rate limit info from response headers or body
+                const retryAfter = response.headers?.['retry-after'];
+                const resetTime = retryAfter ? `Please try again in ${Math.ceil(retryAfter / 3600)} hour(s).` : 'Please try again later.';
+                
                 selectedModels.forEach(model => {
                   setStatus(model, 'error');
-                  updateResponse(model, '⚠️ **Rate Limit Exceeded**\n\nYou have reached the limit of 5 requests per hour. Please try again later.', false);
+                  updateResponse(model, `⚠️ **Rate Limit Exceeded**\n\nYou have reached the request limit. ${resetTime}`, false);
                 });
                 setIsStreaming(false);
                 eventSourceRef.current?.close();
@@ -151,11 +155,6 @@ export function useSSEStream() {
           if ((data as any).type === 'session') {
             const sessionId = (data as any).sessionId;
             (usePlaygroundStore.getState() as any).setCurrentSessionId?.(sessionId);
-            
-            setTimeout(() => {
-              window.dispatchEvent(new CustomEvent('sessionCreated'));
-            }, 500);
-            
             return;
           }
 
@@ -193,9 +192,12 @@ export function useSSEStream() {
           api.head('/playground/stream')
             .then(response => {
               if (response.status === 429) {
+                const retryAfter = response.headers?.['retry-after'];
+                const resetTime = retryAfter ? `Please try again in ${Math.ceil(retryAfter / 3600)} hour(s).` : 'Please try again later.';
+                
                 selectedModels.forEach(model => {
                   setStatus(model, 'error');
-                  updateResponse(model, '⚠️ **Rate Limit Exceeded**\n\nYou have reached the limit of 5 requests per hour. Please try again later.', false);
+                  updateResponse(model, `⚠️ **Rate Limit Exceeded**\n\nYou have reached the request limit. ${resetTime}`, false);
                 });
                 setIsStreaming(false);
                 return;

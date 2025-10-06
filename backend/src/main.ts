@@ -11,6 +11,7 @@ import rateLimit from 'express-rate-limit';
 import cookieParser from 'cookie-parser';
 import compression from 'compression';
 import { Environment } from './core/enums/environment.enum';
+import { RATE_LIMIT_CONFIG } from './core/constants/rate-limit.constants';
 import * as express from 'express';
 
 // eslint-disable-next-line max-lines-per-function,max-statements
@@ -50,11 +51,27 @@ async function bootstrap() {
   );
 
   app.use(cookieParser());
+  
+  // Enable rate limiting
+  const rateLimitConfig = rateLimit({
+    windowMs: RATE_LIMIT_CONFIG.WINDOW_MS,
+    limit: RATE_LIMIT_CONFIG.MAX_REQUESTS,
+    message: {
+      error: 'Too many requests',
+      message: `Rate limit exceeded. You have reached the limit of ${RATE_LIMIT_CONFIG.MAX_REQUESTS} requests per ${RATE_LIMIT_CONFIG.WINDOW_HOURS} hour${RATE_LIMIT_CONFIG.WINDOW_HOURS > 1 ? 's' : ''}. Please try again later.`,
+      retryAfter: RATE_LIMIT_CONFIG.WINDOW_MS / 1000
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+  
+  // Apply rate limiting only to playground stream endpoint
+  app.use('/playground/stream', rateLimitConfig);
+  
   app.enableCors({
     origin: ['https://ai-playground-blond.vercel.app', 'http://localhost:4001', 'http://localhost:3001','http://localhost:3000'],
     credentials: true,
   });
-
 
   app.enableShutdownHooks();
 
