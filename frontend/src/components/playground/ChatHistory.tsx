@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useEffect } from 'react';
+import { useRef, useLayoutEffect, memo } from 'react';
 import MarkdownRenderer from './MarkdownRenderer';
 import StatusIndicator from './StatusIndicator';
 
@@ -22,7 +22,7 @@ interface ChatHistoryProps {
   lastCompletedTurn: ChatTurn | null;
 }
 
-export default function ChatHistory({
+function ChatHistory({
   turns,
   selectedModels,
   responses,
@@ -35,15 +35,13 @@ export default function ChatHistory({
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'instant' });
   };
 
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      scrollToBottom();
-    }, 300);
-    return () => clearTimeout(timeoutId);
-  }, [turns.length, isStreaming]);
+  useLayoutEffect(() => {
+    // Auto-scroll when content changes (synchronously after DOM updates)
+    scrollToBottom();
+  }, [turns.length, isStreaming, lastCompletedTurn]);
 
   return (
     <div className="px-6 py-6 space-y-6">
@@ -59,7 +57,7 @@ export default function ChatHistory({
         <>
           {/* Historical conversations */}
           {turns.length > 0 && turns.map((turn, idx) => (
-            <div key={idx} className="space-y-4">
+            <div key={`${turn.time}-${turn.prompt.slice(0, 50)}`} className="space-y-4">
               {/* User message */}
               <div className="flex justify-end">
                 <div className="max-w-[80%] bg-gray-600 dark:bg-gray-700 text-white p-3 rounded-lg rounded-br-none">
@@ -187,3 +185,5 @@ export default function ChatHistory({
     </div>
   );
 }
+
+export default memo(ChatHistory);

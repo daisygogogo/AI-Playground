@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { cn } from '@/lib/utils';
 
@@ -8,7 +9,7 @@ interface MarkdownRendererProps {
   className?: string;
 }
 
-export default function MarkdownRenderer({ content, className }: MarkdownRendererProps) {
+function MarkdownRenderer({ content, className }: MarkdownRendererProps) {
   return (
     <div className={cn("prose prose-sm dark:prose-invert max-w-none", className)}>
       <ReactMarkdown
@@ -72,3 +73,5 @@ export default function MarkdownRenderer({ content, className }: MarkdownRendere
     </div>
   );
 }
+
+export default memo(MarkdownRenderer);
