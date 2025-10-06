@@ -185,20 +185,19 @@ export default function PlaygroundPage() {
   }
 
   return (
-    <div className="min-h-screen flex">
+    <div className="h-screen flex">
       <SessionSidebar 
         currentSessionId={currentSessionId}
         onSessionSelect={handleSessionSelect}
         onNewChat={handleNewChat}
+        onLogout={handleLogout}
+        userName={user?.firstName}
       />
       
-      <div className="flex-1 min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
-        <PlaygroundHeader 
-          userName={user?.firstName}
-          onLogout={handleLogout}
-        />
+      <div className="flex-1 h-screen overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+        <PlaygroundHeader />
         
-        <main className="flex-1 flex flex-col" style={{height: 'calc(100vh - 72px)'}}>
+        <main className="flex-1 flex flex-col h-full">
           <div className="flex-1 overflow-y-auto">
             <ChatHistory 
               turns={turns}
@@ -212,7 +211,7 @@ export default function PlaygroundPage() {
             />
           </div>
           
-          <div className="border-t bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm p-4">
+          <div className="border-t bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm p-2">
             <PromptInput 
               onSubmit={handlePromptSubmit} 
               disabled={isStreaming}

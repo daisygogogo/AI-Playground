@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { ThemeToggle } from '@/components/theme-toggle';
 import { fetchSessions } from '@/services/api';
 
 interface Session {
@@ -15,9 +16,11 @@ interface SessionSidebarProps {
   currentSessionId?: string;
   onSessionSelect: (sessionId: string) => void;
   onNewChat: () => void;
+  onLogout: () => void;
+  userName?: string;
 }
 
-export default function SessionSidebar({ currentSessionId, onSessionSelect, onNewChat }: SessionSidebarProps) {
+export default function SessionSidebar({ currentSessionId, onSessionSelect, onNewChat, onLogout, userName }: SessionSidebarProps) {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -66,8 +69,16 @@ export default function SessionSidebar({ currentSessionId, onSessionSelect, onNe
   };
 
   return (
-    <aside className="w-64 border-r bg-white dark:bg-gray-900 p-4 space-y-4 hidden md:block">
-      <div className="flex items-center justify-between">
+    <aside className="w-64 h-screen border-r bg-white dark:bg-gray-900 p-4 hidden md:flex md:flex-col overflow-hidden">
+      {/* User Info */}
+      {userName && (
+        <div className="text-sm text-gray-600 dark:text-gray-400 truncate mb-4 pb-3 border-b border-gray-200 dark:border-gray-700">
+          Welcome, {userName}
+        </div>
+      )}
+      
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
         <h2 className="font-semibold">History</h2>
         <Button 
           size="sm" 
@@ -79,7 +90,8 @@ export default function SessionSidebar({ currentSessionId, onSessionSelect, onNe
         </Button>
       </div>
       
-      <div className="space-y-2 text-sm overflow-y-auto max-h-[calc(100vh-100px)]">
+      {/* Sessions List */}
+      <div className="flex-1 space-y-2 text-sm overflow-y-auto">
         {sessions.length === 0 ? (
           <div className="text-muted-foreground">No history</div>
         ) : (
@@ -112,6 +124,21 @@ export default function SessionSidebar({ currentSessionId, onSessionSelect, onNe
         )}
         
         {loadingSessions && <div className="text-xs text-muted-foreground">Loading...</div>}
+      </div>
+
+      {/* Bottom Controls */}
+      <div className="border-t pt-4 mt-4">
+        <div className="flex items-center justify-between">
+          <ThemeToggle />
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+            onClick={onLogout}
+          >
+            Logout
+          </Button>
+        </div>
       </div>
     </aside>
   );

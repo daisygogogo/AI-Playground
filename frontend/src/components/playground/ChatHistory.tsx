@@ -44,17 +44,17 @@ function ChatHistory({
   }, [turns.length, isStreaming, lastCompletedTurn]);
 
   return (
-    <div className="px-6 py-6 space-y-6">
+    <div className="h-full flex flex-col">
       {/* Empty state */}
       {turns.length === 0 && !isStreaming && !lastCompletedTurn ? (
         <div className="flex-1 flex items-center justify-center text-center">
           <div className="text-gray-500 dark:text-gray-300">
-            <div className="text-lg mb-2">👋 Welcome to AI Playground</div>
-            <div>Send a message to start comparing AI models</div>
+            <div className="text-xl mb-3">👋 Welcome to AI Playground</div>
+            <div className="text-base">Send a message to start comparing AI models</div>
           </div>
         </div>
       ) : (
-        <>
+        <div className="px-6 py-10 space-y-6">
           {/* Historical conversations */}
           {turns.length > 0 && turns.map((turn, idx) => (
             <div key={`${turn.time}-${turn.prompt.slice(0, 50)}`} className="space-y-4">
@@ -180,7 +180,7 @@ function ChatHistory({
           )}
           
           <div ref={messagesEndRef} />
-        </>
+        </div>
       )}
     </div>
   );

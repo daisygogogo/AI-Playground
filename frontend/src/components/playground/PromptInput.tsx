@@ -34,20 +34,24 @@ export default function PromptInput({
   };
   
   return (
-    <div className={cn("border-2 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 p-4 rounded-lg space-y-3", className)}>
+    <div className={cn("border-2 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 p-3 rounded-lg space-y-2", className)}>
       <Textarea
         value={prompt}
         onChange={(e) => setPrompt(e.target.value)}
         placeholder="Enter the questions you want to ask the AI models..."
-        className="min-h-[120px] resize-none border-0 bg-transparent p-2 focus-visible:ring-0 text-gray-800 dark:text-gray-200"
+        className="resize-none border-0 bg-transparent p-2 focus-visible:ring-0 text-gray-800 dark:text-gray-200"
         disabled={disabled}
         onKeyDown={handleKeyDown}
       />
-      <div className="border-t border-gray-300 dark:border-gray-600 pt-3">
-        <div className="flex justify-end items-center">
+      <div className="border-t border-gray-300 dark:border-gray-600 pt-2">
+        <div className="flex justify-between items-center">
+          <div className="text-xs text-gray-600 dark:text-gray-400">
+            Press Ctrl/Cmd + Enter to send quickly
+          </div>
           <Button 
             onClick={handleSubmit}
             disabled={!prompt.trim() || disabled}
+            size="sm"
             className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 text-white dark:text-white"
           >
             {disabled ? (
@@ -57,9 +61,6 @@ export default function PromptInput({
             )}
             {disabled ? 'Generating...' : 'Send to AI Models'}
           </Button>
-        </div>
-        <div className="mt-2 text-xs text-gray-600 dark:text-gray-400 text-center">
-          Press Ctrl/Cmd + Enter to send quickly
         </div>
       </div>
     </div>
