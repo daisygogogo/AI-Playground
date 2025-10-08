@@ -10,6 +10,7 @@ interface ChatTurn {
   prompt: string;
   replies: Record<string, string>;
   metrics: Record<string, { tokensUsed: number; cost: number; responseTime: number }>;
+  order?: string[];
 }
 
 interface ChatHistoryProps {
@@ -36,13 +37,18 @@ function ChatHistory({
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'instant' });
+    const container = document.getElementById('chat-scroll-container');
+    if (container) {
+      container.scrollTop = container.scrollHeight;
+    } else {
+      messagesEndRef.current?.scrollIntoView();
+    }
   };
 
   useLayoutEffect(() => {
-    // Auto-scroll when content changes (synchronously after DOM updates)
+    if (!isStreaming) return;
     scrollToBottom();
-  }, [turns.length, isStreaming, lastCompletedTurn]);
+  }, [currentPrompt, isStreaming]);
 
   return (
     <div className="h-full flex flex-col">
@@ -55,7 +61,7 @@ function ChatHistory({
           </div>
         </div>
       ) : (
-        <div className="px-6 py-10 space-y-6">
+        <div className="px-6 pt-10 space-y-6 pb-52">
           {/* Historical conversations */}
           {turns.length > 0 && turns.map((turn, idx) => (
             <div key={`${turn.time}-${turn.prompt.slice(0, 50)}`} className="space-y-4">
@@ -71,7 +77,7 @@ function ChatHistory({
               
               {/* AI responses - side by side */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {selectedModels.map((model, index) => (
+                {((turn.order && turn.order.filter(m => (turn.replies || {})[m] !== undefined)) || Object.keys(turn.replies || {})).map((model, index) => (
                   <div 
                     key={model} 
                     className={`border-2 p-4 rounded-lg ${
@@ -99,7 +105,6 @@ function ChatHistory({
                         <div className="text-sm text-gray-500 dark:text-gray-400">No response saved</div>
                       )}
                     </div>
-                    {/* Historical metrics if available */}
                     {turn.metrics?.[model] && (
                       <div className="text-xs text-gray-600 dark:text-gray-400 border-t border-gray-300 dark:border-gray-600 pt-2 space-y-1">
                         <div>Tokens: {turn.metrics[model].tokensUsed}</div>
@@ -130,7 +135,7 @@ function ChatHistory({
               
               {/* Streaming AI responses - side by side */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {selectedModels.map((model, index) => (
+                {(lastCompletedTurn ? (((lastCompletedTurn as any).order && (lastCompletedTurn as any).order.filter((m: string) => ((lastCompletedTurn as any).replies || {})[m] !== undefined)) || Object.keys((lastCompletedTurn as any).replies || {})) : selectedModels).map((model, index) => (
                   <div 
                     key={model} 
                     className={`border-2 p-4 rounded-lg ${
@@ -166,7 +171,6 @@ function ChatHistory({
                         <MarkdownRenderer content={responses[model] || ''} />
                       )}
                     </div>
-                    {/* Current metrics if available */}
                     {(lastCompletedTurn?.metrics?.[model] || metrics[model]) && (
                       <div className="text-xs text-gray-600 dark:text-gray-400 border-t border-gray-300 dark:border-gray-600 pt-2 space-y-1">
                         <div>Tokens: {lastCompletedTurn?.metrics?.[model]?.tokensUsed || metrics[model]?.tokensUsed || 0}</div>

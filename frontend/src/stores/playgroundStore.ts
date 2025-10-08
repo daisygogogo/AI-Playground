@@ -16,7 +16,7 @@ interface PlaygroundStore extends PlaygroundState {
 
 const initialState: PlaygroundState = {
   prompt: '',
-  selectedModels: ['gpt-3.5-turbo', 'gpt-4o-mini', 'database-agent'],
+  selectedModels: ['gpt-4o-mini', 'database-agent'],
   responses: {},
   statuses: {},
   metrics: {},

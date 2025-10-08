@@ -58,6 +58,7 @@ export default function PlaygroundPage() {
       }
       
       const session = await fetchSessionDetail(currentSessionId);
+      const sessionOrder = Array.isArray(session?.models) ? session.models as string[] : undefined;
       const grouped: Record<string, any> = {};
       
       (session?.conversations || []).forEach((c: any) => {
@@ -67,7 +68,8 @@ export default function PlaygroundPage() {
             time: c.createdAt, 
             prompt: c.userPrompt || session.prompt, 
             replies: {},
-            metrics: {}
+            metrics: {},
+            order: sessionOrder || [...selectedModels]
           };
         }
         grouped[key].replies[c.modelName] = c.response;
@@ -194,11 +196,11 @@ export default function PlaygroundPage() {
         userName={user?.firstName}
       />
       
-      <div className="flex-1 h-screen overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+      <div className="flex-1 h-screen overflow-hidden min-h-0 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
         <PlaygroundHeader />
         
-        <main className="flex-1 flex flex-col h-full">
-          <div className="flex-1 overflow-y-auto">
+        <main className="flex-1 flex flex-col h-full min-h-0">
+          <div className="flex-1 min-h-0 overflow-y-auto pb-48 pt-2" id="chat-scroll-container">
             <ChatHistory 
               turns={turns}
               selectedModels={selectedModels}
@@ -211,7 +213,7 @@ export default function PlaygroundPage() {
             />
           </div>
           
-          <div className="border-t bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm p-2">
+          <div className="fixed bottom-0 left-64 right-0 border-t bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm p-2">
             <PromptInput 
               onSubmit={handlePromptSubmit} 
               disabled={isStreaming}

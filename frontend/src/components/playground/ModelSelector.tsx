@@ -44,11 +44,11 @@ export default function ModelSelector({
 }: ModelSelectorProps) {
   const toggleModel = (model: AIModel) => {
     if (selectedModels.includes(model)) {
-      // Keep at least one model
       if (selectedModels.length > 1) {
         onModelChange(selectedModels.filter(m => m !== model));
       }
     } else {
+      if (selectedModels.length >= 2) return;
       onModelChange([...selectedModels, model]);
     }
   };
@@ -57,7 +57,7 @@ export default function ModelSelector({
     <div className={cn("space-y-6", className)}>
       <div>
         <p className="text-sm text-muted-foreground">
-          Choose AI models to compare (select at least one)
+          Choose up to 2 models (at least 1)
         </p>
       </div>
       

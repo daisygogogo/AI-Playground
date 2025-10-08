@@ -18,7 +18,7 @@ export default function PlaygroundHeader() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <header className="border-b bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm px-4 py-3 flex items-center justify-between">
+    <header className="sticky top-0 z-10 border-b bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm px-4 py-3 flex items-center justify-between">
       <div className="flex items-center space-x-4">
         <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
           AI Playground
@@ -43,7 +43,6 @@ export default function PlaygroundHeader() {
             selectedModels={selectedModels}
             onModelChange={(models) => {
               setSelectedModels(models);
-              setIsOpen(false);
             }}
           />
         </DialogContent>
