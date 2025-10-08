@@ -16,7 +16,7 @@ export class RateLimitGuard implements CanActivate {
 
     // Check rate limit: 30 requests per hour
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-    const rateLimitTimes = 50;
+    const rateLimitTimes = 30;
     
     const recentSessions = await this.prisma.aISession.count({
       where: {

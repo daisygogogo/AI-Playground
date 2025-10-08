@@ -3,6 +3,7 @@
 import { useRef, useLayoutEffect, memo } from 'react';
 import MarkdownRenderer from './MarkdownRenderer';
 import StatusIndicator from './StatusIndicator';
+import { ModelStatus } from '@/types/playground';
 
 interface ChatTurn {
   time: string;
@@ -147,7 +148,7 @@ function ChatHistory({
                         {model}
                       </div>
                       <StatusIndicator 
-                        status={statuses[model] === 'error' ? 'error' : (lastCompletedTurn ? 'complete' : (statuses[model] || 'typing'))} 
+                        status={(statuses[model] === 'error' ? 'error' : (lastCompletedTurn ? 'complete' : (statuses[model] || 'typing'))) as ModelStatus} 
                         modelName="" 
                         responseTime={lastCompletedTurn ? lastCompletedTurn.metrics?.[model]?.responseTime : metrics[model]?.responseTime} 
                       />

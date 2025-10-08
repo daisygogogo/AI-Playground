@@ -2,6 +2,7 @@ import { Controller, Get, Query, Sse, UseGuards, Request, Param } from '@nestjs/
 import { Observable } from 'rxjs';
 import { PlaygroundService } from './playground.service';
 import { OpenAIProvider } from './providers/openai.provider';
+import { DatabaseAgentProvider } from './providers/database-agent.provider';
 import { AuthenticationGuard } from '../authentication/authentication.guard';
 import { RateLimitGuard } from './rate-limit.guard';
 import { AuthenticatedRequest } from '../../common/types/auth.types';
@@ -121,7 +122,9 @@ export class PlaygroundController {
         } as MessageEvent);
 
         // Create AI provider instance
-        const provider = new OpenAIProvider(modelName);
+        const provider = modelName === 'database-agent' 
+          ? new DatabaseAgentProvider(this.prisma)
+          : new OpenAIProvider(modelName);
         const startTime = Date.now();
         let fullResponse = '';
         

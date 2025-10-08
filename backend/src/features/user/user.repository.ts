@@ -57,6 +57,10 @@ export class UserRepository {
         lastName: true,
         terms: true,
         role: true,
+        department: true,
+        jobTitle: true,
+        lastLoginAt: true,
+        isActive: true,
       },
     });
   }

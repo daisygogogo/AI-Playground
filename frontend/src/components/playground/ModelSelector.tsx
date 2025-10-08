@@ -28,6 +28,12 @@ const modelInfo: Record<AIModel, {
     description: 'High-quality output, lowest cost',
     cost: '$0.00015/1K tokens',
     speed: '⚡ Ultra Fast'
+  },
+  'database-agent': {
+    name: 'Database Agent',
+    description: 'AI agent with database access for queries',
+    cost: '$0.00015/1K tokens',
+    speed: '🗄️ Database'
   }
 };
 
@@ -48,15 +54,14 @@ export default function ModelSelector({
   };
 
   return (
-    <div className={cn("space-y-4", className)}>
+    <div className={cn("space-y-6", className)}>
       <div>
-        <h3 className="text-sm font-medium text-foreground mb-2">Select AI Models</h3>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           Choose AI models to compare (select at least one)
         </p>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {(Object.keys(modelInfo) as AIModel[]).map(model => {
           const info = modelInfo[model];
           const isSelected = selectedModels.includes(model);

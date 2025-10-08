@@ -148,7 +148,8 @@ export function useSSEStream() {
         }
       }, 3000);
 
-      eventSourceRef.current.onmessage = (event) => {
+      if (eventSourceRef.current) {
+        eventSourceRef.current.onmessage = (event) => {
         try {
           const data: SSEEvent | { type: 'session'; sessionId: string } = JSON.parse(event.data);
 
@@ -179,13 +180,15 @@ export function useSSEStream() {
         } catch (error) {
           console.error('Error parsing SSE data:', error);
         }
-      };
+        };
+      }
 
-      eventSourceRef.current.onopen = () => {
-        clearTimeout(errorTimeout);
-      };
+      if (eventSourceRef.current) {
+        eventSourceRef.current.onopen = () => {
+          clearTimeout(errorTimeout);
+        };
 
-      eventSourceRef.current.onerror = (error) => {
+        eventSourceRef.current.onerror = (error) => {
         clearTimeout(errorTimeout);
         
         if (eventSourceRef.current?.readyState === EventSource.CLOSED) {
@@ -224,7 +227,8 @@ export function useSSEStream() {
           eventSourceRef.current?.close();
           return;
         }
-      };
+        };
+      }
 
       const checkAllComplete = () => {
         const currentStatuses = usePlaygroundStore.getState().statuses;

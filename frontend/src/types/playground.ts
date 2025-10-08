@@ -1,5 +1,5 @@
 // AI Model Types
-export type AIModel = 'gpt-3.5-turbo' | 'gpt-4o-mini';
+export type AIModel = 'gpt-3.5-turbo' | 'gpt-4o-mini' | 'database-agent';
 
 export type ModelStatus = 'typing' | 'streaming' | 'complete' | 'error';
 

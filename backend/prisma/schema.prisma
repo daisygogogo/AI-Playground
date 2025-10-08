@@ -22,8 +22,13 @@ model User {
   password         String
   terms            Boolean  @default(false)
   role             Role     @default(USER)
+  department       String?  // User department
+  jobTitle         String?  // Job title
+  lastLoginAt      DateTime? @db.Timestamptz(3)
+  isActive         Boolean  @default(true)
   contacts         Contact[]
   aiSessions       AISession[]
+  tasks            Task[]
 }
 
 model Contact {
@@ -79,6 +84,44 @@ enum SessionStatus {
   ACTIVE
   COMPLETED
   ERROR
+}
+
+// Simplified: only add two tables
+
+// 1. Task table
+model Task {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime @updatedAt @db.Timestamptz(3)
+  title       String
+  description String?
+  status      TaskStatus @default(TODO)
+  priority    TaskPriority @default(MEDIUM)
+  dueDate     DateTime? @db.Timestamptz(3)
+  assigneeId  String?
+  assignee    User? @relation(fields: [assigneeId], references: [id])
+}
+
+// 2. System metrics table
+model SystemMetrics {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
+  metricName  String
+  metricValue Float
+  unit        String?
+  category    String
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
 }
 
 enum ConversationStatus {

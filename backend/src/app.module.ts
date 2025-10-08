@@ -7,6 +7,7 @@ import { AuthenticationModule } from './features/authentication/authentication.m
 import { ContactModule } from './features/contact/contact.module';
 import { FileUploadModule } from './features/file-upload/file-upload.module';
 import { PlaygroundModule } from './features/playground/playground.module';
+import { AgentModule } from './features/agent/agent.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { PlaygroundModule } from './features/playground/playground.module';
     ContactModule,
     FileUploadModule,
     PlaygroundModule,
+    AgentModule,
   ],
 })
 export class AppModule {}
