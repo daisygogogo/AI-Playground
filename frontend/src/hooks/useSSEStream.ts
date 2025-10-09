@@ -250,7 +250,7 @@ export function useSSEStream() {
         if (isComplete || !currentlyStreaming) {
           clearInterval(checkInterval);
         }
-      }, 1000);
+      }, 200); // Reduce interval to 200ms for faster completion detection
 
       const currentEventSource = eventSourceRef.current;
       if (currentEventSource) {

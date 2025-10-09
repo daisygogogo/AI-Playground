@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import PromptInput from '@/components/playground/PromptInput';
 import SessionSidebar from '@/components/playground/SessionSidebar';
@@ -25,10 +25,10 @@ export default function PlaygroundPage() {
   const router = useRouter();
   const { streamPrompt, isStreaming, closeStream } = useSSEStream();
   
-  const [hasAsked, setHasAsked] = useState(false);
   const [turns, setTurns] = useState<any[]>([]);
-  const [lastCompletedTurn, setLastCompletedTurn] = useState<any>(null);
-  const currentSessionId = (usePlaygroundStore.getState() as any).currentSessionId;
+  
+  // Get currentSessionId from store state
+  const currentSessionId = (usePlaygroundStore() as any).currentSessionId;
 
   // Cleanup SSE connection on component unmount
   useEffect(() => {
@@ -48,15 +48,10 @@ export default function PlaygroundPage() {
   useEffect(() => {
     const loadDetail = async () => {
       if (!currentSessionId) { 
-        setTurns([]);
-        setLastCompletedTurn(null);
         return; 
       }
       
-      if (isStreaming) {
-        return;
-      }
-      
+      // Load existing session data
       const session = await fetchSessionDetail(currentSessionId);
       const sessionOrder = Array.isArray(session?.models) ? session.models as string[] : undefined;
       const grouped: Record<string, any> = {};
@@ -69,7 +64,7 @@ export default function PlaygroundPage() {
             prompt: c.userPrompt || session.prompt, 
             replies: {},
             metrics: {},
-            order: sessionOrder || [...selectedModels]
+            order: sessionOrder || []
           };
         }
         grouped[key].replies[c.modelName] = c.response;
@@ -94,88 +89,47 @@ export default function PlaygroundPage() {
   }, [currentSessionId]);
 
 
-  // Handle streaming completion
-  useEffect(() => {
-    if (!isStreaming && currentSessionId && hasAsked && prompt && !lastCompletedTurn) {
-      const hasErrors = selectedModels.some(model => statuses[model] === 'error');
-      if (!hasErrors) {
-        const completedTurn = {
-          time: new Date().toISOString(),
-          prompt: prompt,
-          replies: { ...responses },
-          metrics: { ...metrics }
-        };
-        setLastCompletedTurn(completedTurn);
-      }
-    }
-  }, [isStreaming, statuses, selectedModels, currentSessionId, hasAsked, prompt, lastCompletedTurn, responses, metrics]);
-
-  // Clear completed turn when new streaming starts (database will handle the history)
-  useEffect(() => {
-    if (isStreaming && lastCompletedTurn) {
-      setLastCompletedTurn(null);
-    }
-  }, [isStreaming, lastCompletedTurn]);
-
-  const handlePromptSubmit = async (newPrompt: string) => {
-    // If there's a lastCompletedTurn, reload session detail to move it to history
-    if (lastCompletedTurn && currentSessionId) {
-      const session = await fetchSessionDetail(currentSessionId);
-      const grouped: Record<string, any> = {};
-      
-      (session?.conversations || []).forEach((c: any) => {
-        const key = c.userPrompt || session.prompt || 'unknown';
-        if (!grouped[key]) {
-          grouped[key] = { 
-            time: c.createdAt, 
-            prompt: c.userPrompt || session.prompt, 
-            replies: {},
-            metrics: {}
-          };
-        }
-        grouped[key].replies[c.modelName] = c.response;
-        grouped[key].metrics[c.modelName] = {
-          tokensUsed: (c.inputTokens || 0) + (c.outputTokens || 0),
-          cost: c.cost || 0,
-          responseTime: c.responseTime || 0
-        };
-        
-        if (new Date(c.createdAt) < new Date(grouped[key].time)) {
-          grouped[key].time = c.createdAt;
-        }
-      });
-      
-      const arr = Object.values(grouped).sort((a: any, b: any) => 
-        new Date(a.time).getTime() - new Date(b.time).getTime()
-      );
-      setTurns(arr as any[]);
-      
-      // Notify SessionSidebar to refresh
-      window.dispatchEvent(new CustomEvent('sessionCreated'));
+  const handlePromptSubmit = useCallback(async (newPrompt: string) => {
+    // If there's a current completed conversation, add it to history first
+    if (prompt && !isStreaming && Object.keys(responses).some(key => responses[key])) {
+      const completedTurn = {
+        time: new Date().toISOString(),
+        prompt: prompt,
+        replies: { ...responses },
+        metrics: { ...metrics },
+        order: [...selectedModels]
+      };
+      setTurns(prev => [...prev, completedTurn]);
     }
     
+    // Clear previous responses and start new conversation
     setPrompt(newPrompt);
     streamPrompt(newPrompt);
-    setHasAsked(true);
-  };
+    
+    // Scroll to bottom when starting new prompt
+    setTimeout(() => {
+      const container = document.getElementById('chat-scroll-container');
+      if (container) {
+        container.scrollTop = container.scrollHeight;
+      }
+    }, 100);
+  }, [streamPrompt, setPrompt, prompt, isStreaming, responses, metrics, selectedModels]);
 
   const handleLogout = () => {
     logout();
     router.push('/login');
   };
 
-  const handleSessionSelect = (sessionId: string) => {
-    setLastCompletedTurn(null);
-    setHasAsked(false);
+  const handleSessionSelect = useCallback((sessionId: string) => {
+    setPrompt(''); // Clear current prompt when switching sessions
     (usePlaygroundStore.getState() as any).setCurrentSessionId?.(sessionId);
-  };
+  }, [setPrompt]);
 
-  const handleNewChat = () => {
-    (usePlaygroundStore.getState() as any).setCurrentSessionId?.(null);
+  const handleNewChat = useCallback(() => {
     setTurns([]);
-    setLastCompletedTurn(null);
-    setHasAsked(false);
-  };
+    setPrompt(''); // Clear current prompt
+    (usePlaygroundStore.getState() as any).setCurrentSessionId?.(null);
+  }, [setPrompt]);
 
   // Show loading state if not authenticated
   if (!isAuthenticated()) {
@@ -200,7 +154,7 @@ export default function PlaygroundPage() {
         <PlaygroundHeader />
         
         <main className="flex-1 flex flex-col h-full min-h-0">
-          <div className="flex-1 min-h-0 overflow-y-auto pb-48 pt-2" id="chat-scroll-container">
+          <div className="flex-1 min-h-0 overflow-y-auto mb-56 pt-2" id="chat-scroll-container">
             <ChatHistory 
               turns={turns}
               selectedModels={selectedModels}
@@ -209,7 +163,6 @@ export default function PlaygroundPage() {
               metrics={metrics}
               isStreaming={isStreaming}
               currentPrompt={prompt}
-              lastCompletedTurn={lastCompletedTurn}
             />
           </div>
           

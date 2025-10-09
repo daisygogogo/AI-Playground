@@ -22,26 +22,23 @@ export default function StatusIndicator({
     typing: {
       icon: '⌨️',
       text: 'Preparing...',
-      variant: 'secondary' as const,
-      animate: false
+      variant: 'secondary' as const
     },
     streaming: {
       icon: <Loader2 className="w-4 h-4 animate-spin" />,
       text: 'Generating...',
       variant: 'default' as const,
-      animate: true
+      animate: false
     },
     complete: {
       icon: '✅',
       text: `Complete ${responseTime ? `(${responseTime}ms)` : ''}`,
-      variant: 'success' as const,
-      animate: false
+      variant: 'success' as const
     },
     error: {
       icon: '❌',
       text: 'Error',
-      variant: 'destructive' as const,
-      animate: false
+      variant: 'destructive' as const
     }
   };
 
@@ -52,10 +49,7 @@ export default function StatusIndicator({
       <h3 className="font-semibold text-foreground">{modelName}</h3>
       <Badge 
         variant={config.variant}
-        className={cn(
-          "flex items-center gap-2",
-          config.animate && "animate-pulse"
-        )}
+        className="flex items-center gap-2"
       >
         {config.icon}
         <span>{config.text}</span>
