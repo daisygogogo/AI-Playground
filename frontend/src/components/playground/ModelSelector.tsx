@@ -42,49 +42,32 @@ export default function ModelSelector({
   onModelChange, 
   className 
 }: ModelSelectorProps) {
-  const toggleModel = (model: AIModel) => {
-    if (selectedModels.includes(model)) {
-      if (selectedModels.length > 1) {
-        onModelChange(selectedModels.filter(m => m !== model));
-      }
-    } else {
-      if (selectedModels.length >= 2) return;
-      onModelChange([...selectedModels, model]);
-    }
-  };
+  // Only show the default models and make them non-interactive
+  const displayModels: AIModel[] = ['gpt-4o-mini', 'database-agent'];
 
   return (
     <div className={cn("space-y-6", className)}>
       <div>
         <p className="text-sm text-muted-foreground">
-          Choose up to 2 models (at least 1)
+          Selected models (fixed)
         </p>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {(Object.keys(modelInfo) as AIModel[]).map(model => {
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {displayModels.map(model => {
           const info = modelInfo[model];
-          const isSelected = selectedModels.includes(model);
           
           return (
             <Card 
               key={model}
-              className={cn(
-                "cursor-pointer transition-all border-2",
-                isSelected 
-                  ? "border-primary bg-primary/5" 
-                  : "border-gray-200 hover:border-primary/50"
-              )}
-              onClick={() => toggleModel(model)}
+              className="border-2 border-primary bg-primary/5"
             >
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-sm">{info.name}</CardTitle>
-                  {isSelected && (
-                    <Badge variant="default" className="text-xs">
-                      Selected
-                    </Badge>
-                  )}
+                  <Badge variant="default" className="text-xs">
+                    Selected
+                  </Badge>
                 </div>
               </CardHeader>
               <CardContent className="pt-0">
@@ -102,7 +85,7 @@ export default function ModelSelector({
       </div>
       
       <div className="text-xs text-muted-foreground">
-        {selectedModels.length} model(s) selected
+        {displayModels.length} model(s) selected (fixed)
       </div>
     </div>
   );
